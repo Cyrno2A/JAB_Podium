@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Podium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#14181f;
+    --panel:#1b212b;
+    --panel-alt:#202938;
+    --ink:#ede6d6;
+    --ink-dim:#97a0ae;
+    --ink-faint:#5c6472;
+    --gold:#c9a15a;
+    --gold-soft:#8c7038;
+    --burgundy:#a6473f;
+    --sage:#8ba382;
+    --line:rgba(201,161,90,0.22);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans',sans-serif;
+    font-feature-settings:"tnum" 1;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:0 20px 80px;}
+  h1,h2,h3{font-family:'Fraunces',serif;font-weight:600;margin:0;}
+
+  /* Topbar */
+  .topbar{padding:48px 0 32px;text-align:center;}
+  .topbar h1{font-size:2.6rem;letter-spacing:0.01em;color:var(--ink);}
+  .topbar p{margin:10px 0 0;color:var(--ink-dim);font-size:0.98rem;}
+
+  section{margin-top:56px;}
+  .section-head{display:flex;align-items:baseline;gap:12px;margin-bottom:22px;}
+  .section-head .tab{width:3px;height:22px;background:var(--gold);flex:none;}
+  .section-head h2{font-size:1.5rem;color:var(--ink);}
+  .section-head .count{color:var(--ink-faint);font-size:0.85rem;}
+
+  /* Hero / dernier tournoi */
+  .hero-card{
+    background:var(--panel);
+    border-top:3px solid var(--gold);
+    padding:32px 28px 28px;
+  }
+  .hero-meta{color:var(--ink-dim);font-size:0.92rem;margin-bottom:22px;}
+  .hero-meta strong{color:var(--ink);font-weight:600;}
+  .podium-row{display:flex;gap:14px;align-items:flex-end;margin-bottom:24px;flex-wrap:wrap;}
+  .podium-block{
+    flex:1 1 140px;
+    background:var(--panel-alt);
+    padding:18px 16px;
+    border-bottom:3px solid var(--gold-soft);
+    text-align:center;
+  }
+  .podium-block.rank-1{border-bottom-color:var(--gold);padding-top:26px;}
+  .podium-block .rank-num{font-family:'Fraunces',serif;font-size:2.1rem;color:var(--gold);line-height:1;}
+  .podium-block.rank-1 .rank-num{font-size:2.6rem;}
+  .podium-block .rank-name{margin-top:8px;font-size:0.98rem;color:var(--ink);}
+  .podium-block .rank-sub{margin-top:4px;font-size:0.78rem;color:var(--ink-faint);}
+  .rest-list{color:var(--ink-dim);font-size:0.88rem;line-height:1.9;}
+  .rest-list span{margin-right:16px;white-space:nowrap;}
+  .rest-list b{color:var(--ink);font-weight:500;}
+
+  /* Classement cumulé */
+  .tabs{display:flex;gap:6px;margin-bottom:20px;}
+  .tab-btn{
+    background:transparent;border:1px solid var(--line);color:var(--ink-dim);
+    padding:8px 16px;font-family:'IBM Plex Sans',sans-serif;font-size:0.86rem;
+    cursor:pointer;transition:all .15s ease;
+  }
+  .tab-btn.active{background:var(--gold);border-color:var(--gold);color:#1b1610;font-weight:600;}
+  .tab-btn:hover:not(.active){border-color:var(--gold);color:var(--ink);}
+  .rank-list{display:flex;flex-direction:column;gap:8px;}
+  .rank-item{display:grid;grid-template-columns:26px 1fr auto;align-items:center;gap:14px;}
+  .rank-item .pos{color:var(--ink-faint);font-size:0.9rem;}
+  .rank-item .bar-wrap{position:relative;background:var(--panel-alt);height:30px;}
+  .rank-item .bar-fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--gold-soft),var(--gold));}
+  .rank-item .bar-label{position:absolute;left:12px;top:0;bottom:0;display:flex;align-items:center;font-size:0.88rem;color:var(--ink);z-index:1;}
+  .rank-item .pts{font-size:0.88rem;color:var(--ink-dim);min-width:52px;text-align:right;}
+
+  /* Fréquentation */
+  .freq-chart{display:flex;align-items:flex-end;gap:14px;height:150px;padding-top:10px;}
+  .freq-bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
+  .freq-bar .col{width:100%;max-width:44px;background:linear-gradient(180deg,var(--gold),var(--gold-soft));}
+  .freq-bar .val{font-size:0.82rem;color:var(--ink);margin-bottom:6px;}
+  .freq-bar .lbl{margin-top:8px;font-size:0.78rem;color:var(--ink-dim);text-align:center;}
+
+  /* Win rate */
+  table{width:100%;border-collapse:collapse;}
+  .wr-table th{text-align:left;font-weight:500;color:var(--ink-faint);font-size:0.78rem;padding:0 12px 10px;border-bottom:1px solid var(--line);}
+  .wr-table td{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:0.92rem;}
+  .wr-table td.num{text-align:right;color:var(--ink-dim);}
+  .wr-bar-cell{display:flex;align-items:center;gap:10px;}
+  .wr-bar-track{flex:1;height:6px;background:var(--panel-alt);position:relative;}
+  .wr-bar-fill{position:absolute;left:0;top:0;bottom:0;background:var(--sage);}
+  .wr-pct{min-width:52px;text-align:right;font-size:0.88rem;color:var(--ink);}
+
+  /* Historique */
+  .accordion-item{border-bottom:1px solid var(--line);}
+  .accordion-head{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:16px 4px;cursor:pointer;background:none;border:none;width:100%;
+    color:var(--ink);font-family:'IBM Plex Sans',sans-serif;text-align:left;
+  }
+  .accordion-head .t-title{font-size:0.98rem;}
+  .accordion-head .t-title b{font-weight:600;}
+  .accordion-head .t-meta{color:var(--ink-faint);font-size:0.82rem;margin-left:10px;}
+  .accordion-head .chev{color:var(--gold);font-size:0.8rem;transition:transform .15s ease;}
+  .accordion-item.open .chev{transform:rotate(90deg);}
+  .accordion-body{max-height:0;overflow:hidden;transition:max-height .2s ease;}
+  .accordion-item.open .accordion-body{max-height:600px;}
+  .accordion-body-inner{padding:0 4px 18px;}
+  .hist-row{display:grid;grid-template-columns:26px 1fr auto auto;gap:12px;padding:6px 0;font-size:0.86rem;color:var(--ink-dim);}
+  .hist-row .n{color:var(--ink-faint);}
+  .hist-row .p{color:var(--ink);}
+
+  /* States */
+  .state{padding:40px 24px;text-align:center;color:var(--ink-dim);background:var(--panel);border-top:3px solid var(--line);}
+  .state.error{border-top-color:var(--burgundy);}
+  .state h3{color:var(--ink);margin-bottom:10px;font-size:1.15rem;}
+  .state p{font-size:0.9rem;max-width:480px;margin:0 auto;}
+  .retry-btn{margin-top:16px;background:transparent;border:1px solid var(--gold);color:var(--gold);padding:8px 18px;font-size:0.85rem;cursor:pointer;}
+  .retry-btn:hover{background:var(--gold);color:#1b1610;}
+
+  footer{margin-top:64px;text-align:center;color:var(--ink-faint);font-size:0.78rem;}
+  footer button{background:none;border:none;color:var(--ink-faint);text-decoration:underline;cursor:pointer;font-size:0.78rem;padding:0;}
+
+  @media (max-width:600px){
+    .topbar h1{font-size:2rem;}
+    .podium-row{flex-direction:column;}
+    .podium-block.rank-1{padding-top:18px;}
+    .freq-chart{height:120px;}
+    .rank-item{grid-template-columns:22px 1fr auto;gap:8px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <h1>Podium</h1>
+    <p>Suivi des tournois draft &amp; scellé</p>
+  </div>
+
+  <div id="content">
+    <div class="state" id="loading-state">
+      <h3>Chargement des résultats…</h3>
+      <p>On va chercher les dernières données du club.</p>
+    </div>
+  </div>
+
+  <footer id="footer" style="display:none;">
+    <span id="updated-at"></span> · <button id="refresh-btn">Rafraîchir</button>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script>
+const RESULTATS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRtBmKFE4O9TtTNWFuiH8J0K1yEiFerGFv_4ag6SBlRMl6NM7qaCVAgRwfAwjKx8cmkBPFxzQXNCauq/pub?gid=907605943&single=true&output=csv";
+const DASHBOARD_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRtBmKFE4O9TtTNWFuiH8J0K1yEiFerGFv_4ag6SBlRMl6NM7qaCVAgRwfAwjKx8cmkBPFxzQXNCauq/pub?gid=1513490379&single=true&output=csv";
+
+const MONTHS_FR = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+
+function ordinal(n){ return n===1 ? '1er' : n+'e'; }
+
+function parseDateFR(str){
+  // "28/06/2026" -> Date
+  const [d,m,y] = str.split('/').map(s=>parseInt(s,10));
+  return new Date(y, m-1, d);
+}
+function formatDateFR(dateObj){
+  return dateObj.getDate()+' '+MONTHS_FR[dateObj.getMonth()]+' '+dateObj.getFullYear();
+}
+function formatMoisAAAAMM(str){
+  const [y,m] = str.split('-');
+  const mi = parseInt(m,10)-1;
+  return MONTHS_FR[mi]+' '+y;
+}
+
+async function fetchCSV(url){
+  const bust = url + '&cb=' + Date.now();
+  try{
+    const res = await fetch(bust, {cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const text = await res.text();
+    if(!text || text.trim().length===0) throw new Error('Réponse vide');
+    return text;
+  }catch(directErr){
+    // Le navigateur refuse l'appel direct (CORS) : on repasse par un relais,
+    // sans risque puisque le contenu visé est déjà public (CSV publié).
+    const proxied = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(bust);
+    const res2 = await fetch(proxied, {cache:'no-store'});
+    if(!res2.ok) throw new Error('HTTP '+res2.status+' (relais)');
+    const text2 = await res2.text();
+    if(!text2 || text2.trim().length===0) throw new Error('Réponse vide (relais)');
+    return text2;
+  }
+}
+
+function parseResultats(csvText){
+  const parsed = Papa.parse(csvText.trim(), {skipEmptyLines:true});
+  const rows = parsed.data.slice(1); // skip header
+  const out = [];
+  for(const r of rows){
+    if(!r[0] || !r[0].trim()) continue;
+    out.push({
+      date: r[0], format: r[1], edition: r[2], pseudo: r[3],
+      rang: parseInt(r[4],10), nbParticipants: parseInt(r[5],10),
+      prenom: r[6], nom: r[7],
+      scoreMatchs: r[13], scorePartiess: r[14],
+      pMGA: r[15], pGE: r[16], pGA: r[17]
+    });
+  }
+  return out;
+}
+
+function parseDashboard(csvText){
+  const parsed = Papa.parse(csvText.trim(), {skipEmptyLines:false});
+  const rows = parsed.data;
+  function readBlock(cols, startRow){
+    const out = [];
+    for(let i=startRow;i<rows.length;i++){
+      const r = rows[i];
+      if(!r) break;
+      const name = r[cols[0]];
+      if(!name || !name.trim()) break;
+      out.push(cols.map(c=>r[c]));
+    }
+    return out;
+  }
+  return {
+    p3: readBlock([0,1], 2).map(([j,p])=>({joueur:j, points:parseFloat(p)||0})),
+    p6: readBlock([3,4], 2).map(([j,p])=>({joueur:j, points:parseFloat(p)||0})),
+    pAn: readBlock([6,7,8], 2).map(([a,j,p])=>({annee:a, joueur:j, points:parseFloat(p)||0})),
+    freq: readBlock([10,11], 2).map(([mo,n])=>({mois:mo, n:parseInt(n,10)||0})),
+    winrate: readBlock([18,19,20], 2).map(([j,m,w])=>({
+      joueur:j, matchs:parseInt(m,10)||0,
+      pct: parseFloat(String(w).replace('%','').replace(',','.'))||0
+    }))
+  };
+}
+
+function renderHero(resultats){
+  if(resultats.length===0){
+    return `<section><div class="state"><h3>Aucun tournoi enregistré pour le moment</h3><p>Dès que le premier draft ou scellé sera joué et ajouté au Sheet, il apparaîtra ici.</p></div></section>`;
+  }
+  let maxDate = null, maxDateStr = null;
+  for(const r of resultats){
+    const d = parseDateFR(r.date);
+    if(!maxDate || d>maxDate){ maxDate=d; maxDateStr=r.date; }
+  }
+  const last = resultats.filter(r=>r.date===maxDateStr).sort((a,b)=>a.rang-b.rang);
+  const top3 = last.slice(0,3);
+  const rest = last.slice(3);
+
+  const podiumHtml = top3.map(p=>`
+    <div class="podium-block ${p.rang===1?'rank-1':''}">
+      <div class="rank-num">${p.rang}</div>
+      <div class="rank-name">${p.prenom} <span style="color:var(--ink-faint)">(${p.pseudo})</span></div>
+      <div class="rank-sub">${p.scoreMatchs||''}</div>
+    </div>`).join('');
+
+  const restHtml = rest.length ? `<div class="rest-list">${rest.map(p=>`<span><b>${ordinal(p.rang)}</b> ${p.prenom} (${p.pseudo})</span>`).join('')}</div>` : '';
+
+  return `
+  <section>
+    <div class="section-head"><div class="tab"></div><h2>Dernier tournoi</h2></div>
+    <div class="hero-card">
+      <div class="hero-meta"><strong>${last[0].format}</strong> · ${last[0].edition} · ${formatDateFR(maxDate)} · ${last[0].nbParticipants} joueurs</div>
+      <div class="podium-row">${podiumHtml}</div>
+      ${restHtml}
+    </div>
+  </section>`;
+}
+
+function renderClassement(dash){
+  const sets = {p3: dash.p3, p6: dash.p6, an: dash.pAn.map(x=>({joueur:x.joueur, points:x.points}))};
+  const anLabel = dash.pAn.length ? dash.pAn[0].annee : '';
+  if(dash.p3.length===0 && dash.p6.length===0 && dash.pAn.length===0){
+    return `<section><div class="section-head"><div class="tab"></div><h2>Classement cumulé</h2></div><div class="state"><h3>Pas encore de classement</h3><p>Il faut au moins un tournoi enregistré pour calculer un classement.</p></div></section>`;
+  }
+  function listHtml(list){
+    const max = Math.max(...list.map(x=>x.points), 1);
+    return `<div class="rank-list">` + list.map((x,i)=>`
+      <div class="rank-item">
+        <div class="pos">${i+1}</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${(x.points/max*100).toFixed(0)}%"></div><div class="bar-label">${x.joueur}</div></div>
+        <div class="pts">${x.points} pts</div>
+      </div>`).join('') + `</div>`;
+  }
+  return `
+  <section>
+    <div class="section-head"><div class="tab"></div><h2>Classement cumulé</h2></div>
+    <div class="tabs">
+      <button class="tab-btn active" data-period="p3">3 derniers mois</button>
+      <button class="tab-btn" data-period="p6">6 derniers mois</button>
+      <button class="tab-btn" data-period="an">Année ${anLabel}</button>
+    </div>
+    <div id="classement-body">${listHtml(sets.p3)}</div>
+  </section>`;
+}
+
+function renderFrequentation(dash){
+  if(dash.freq.length===0){
+    return `<section><div class="section-head"><div class="tab"></div><h2>Fréquentation</h2></div><div class="state"><h3>Pas encore de données</h3><p>La fréquentation par mois apparaîtra dès le premier tournoi.</p></div></section>`;
+  }
+  const max = Math.max(...dash.freq.map(f=>f.n), 1);
+  const bars = dash.freq.map(f=>`
+    <div class="freq-bar">
+      <div class="val">${f.n}</div>
+      <div class="col" style="height:${(f.n/max*100).toFixed(0)}%"></div>
+      <div class="lbl">${formatMoisAAAAMM(f.mois)}</div>
+    </div>`).join('');
+  return `
+  <section>
+    <div class="section-head"><div class="tab"></div><h2>Fréquentation</h2><span class="count">joueurs par mois</span></div>
+    <div class="freq-chart">${bars}</div>
+  </section>`;
+}
+
+function renderWinrate(dash){
+  if(dash.winrate.length===0){
+    return `<section><div class="section-head"><div class="tab"></div><h2>Win rate</h2></div><div class="state"><h3>Pas encore de données</h3><p>Le taux de victoire par joueur apparaîtra ici une fois des matchs enregistrés.</p></div></section>`;
+  }
+  const sorted = [...dash.winrate].sort((a,b)=>b.pct-a.pct);
+  const rows = sorted.map(w=>`
+    <tr>
+      <td>${w.joueur}</td>
+      <td class="num">${w.matchs}</td>
+      <td>
+        <div class="wr-bar-cell">
+          <div class="wr-bar-track"><div class="wr-bar-fill" style="width:${w.pct.toFixed(0)}%"></div></div>
+          <div class="wr-pct">${w.pct.toFixed(0).replace('.',',')}%</div>
+        </div>
+      </td>
+    </tr>`).join('');
+  return `
+  <section>
+    <div class="section-head"><div class="tab"></div><h2>Win rate</h2><span class="count">tous matchs confondus</span></div>
+    <table class="wr-table">
+      <thead><tr><th>Joueur</th><th style="text-align:right;">Matchs</th><th>Taux de victoire</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </section>`;
+}
+
+function renderHistorique(resultats){
+  if(resultats.length===0) return '';
+  const groups = {};
+  for(const r of resultats){
+    const key = r.date+'|'+r.edition;
+    if(!groups[key]) groups[key] = [];
+    groups[key].push(r);
+  }
+  const keys = Object.keys(groups).sort((a,b)=>parseDateFR(b.split('|')[0]) - parseDateFR(a.split('|')[0]));
+  const items = keys.map((k,idx)=>{
+    const list = groups[k].sort((a,b)=>a.rang-b.rang);
+    const first = list[0];
+    const d = parseDateFR(first.date);
+    const rows = list.map(p=>`
+      <div class="hist-row">
+        <div class="n">${p.rang}</div>
+        <div class="p">${p.prenom} (${p.pseudo})</div>
+        <div>${p.scoreMatchs||''}</div>
+        <div>${p.pGA||''}</div>
+      </div>`).join('');
+    return `
+      <div class="accordion-item">
+        <button class="accordion-head" data-idx="${idx}">
+          <span class="t-title"><b>${first.format}</b> · ${first.edition}<span class="t-meta">${formatDateFR(d)} · ${first.nbParticipants} joueurs</span></span>
+          <span class="chev">▸</span>
+        </button>
+        <div class="accordion-body"><div class="accordion-body-inner">${rows}</div></div>
+      </div>`;
+  }).join('');
+  return `
+  <section>
+    <div class="section-head"><div class="tab"></div><h2>Historique</h2><span class="count">${keys.length} tournoi${keys.length>1?'s':''}</span></div>
+    ${items}
+  </section>`;
+}
+
+function wireInteractions(dash){
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const period = btn.dataset.period;
+      const set = period==='p3' ? dash.p3 : period==='p6' ? dash.p6 : dash.pAn.map(x=>({joueur:x.joueur, points:x.points}));
+      const max = Math.max(...set.map(x=>x.points), 1);
+      document.getElementById('classement-body').innerHTML = `<div class="rank-list">` + set.map((x,i)=>`
+        <div class="rank-item">
+          <div class="pos">${i+1}</div>
+          <div class="bar-wrap"><div class="bar-fill" style="width:${(x.points/max*100).toFixed(0)}%"></div><div class="bar-label">${x.joueur}</div></div>
+          <div class="pts">${x.points} pts</div>
+        </div>`).join('') + `</div>`;
+    });
+  });
+  document.querySelectorAll('.accordion-head').forEach(head=>{
+    head.addEventListener('click', ()=>{
+      head.parentElement.classList.toggle('open');
+    });
+  });
+}
+
+async function load(){
+  const content = document.getElementById('content');
+  const footer = document.getElementById('footer');
+  footer.style.display = 'none';
+  content.innerHTML = `<div class="state"><h3>Chargement des résultats…</h3><p>On va chercher les dernières données du club.</p></div>`;
+  try{
+    const [csvResultats, csvDashboard] = await Promise.all([fetchCSV(RESULTATS_URL), fetchCSV(DASHBOARD_URL)]);
+    const resultats = parseResultats(csvResultats);
+    const dash = parseDashboard(csvDashboard);
+
+    // Masque les noms de famille : "Prénom Nom" -> "Prénom (pseudo)"
+    const nameMap = {};
+    for(const r of resultats){
+      const full = (r.prenom+' '+(r.nom||'')).trim();
+      nameMap[full] = r.pseudo ? `${r.prenom} (${r.pseudo})` : r.prenom;
+    }
+    function maskJoueur(name){ return nameMap[name] || name; }
+    dash.p3 = dash.p3.map(x=>({...x, joueur: maskJoueur(x.joueur)}));
+    dash.p6 = dash.p6.map(x=>({...x, joueur: maskJoueur(x.joueur)}));
+    dash.pAn = dash.pAn.map(x=>({...x, joueur: maskJoueur(x.joueur)}));
+    dash.winrate = dash.winrate.map(x=>({...x, joueur: maskJoueur(x.joueur)}));
+
+    content.innerHTML = renderHero(resultats) + renderClassement(dash) + renderFrequentation(dash) + renderWinrate(dash) + renderHistorique(resultats);
+    wireInteractions(dash);
+
+    footer.style.display = 'block';
+    document.getElementById('updated-at').textContent = 'Mis à jour à ' + new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+  }catch(err){
+    console.error(err);
+    content.innerHTML = `
+      <div class="state error">
+        <h3>Impossible de charger les résultats</h3>
+        <p>Vérifie que les deux onglets sont bien publiés sur le web au format CSV dans Google Sheets, avec la case « Republier automatiquement » cochée. (${err.message})</p>
+        <button class="retry-btn" id="retry-btn">Réessayer</button>
+      </div>`;
+    document.getElementById('retry-btn').addEventListener('click', load);
+  }
+}
+
+document.getElementById('refresh-btn').addEventListener('click', load);
+load();
+</script>
+</body>
+</html>
